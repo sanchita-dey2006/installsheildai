@@ -177,11 +177,6 @@ def internal_server_error(error):
 @app.route("/api/index")
 @app.route("/api/index.py")
 def home():
-    try:
-        return render_template("index.html")
-    except Exception:
-        pass
-
     candidate_folders = [
         BASE_DIR,
         os.path.dirname(BASE_DIR),
@@ -189,25 +184,19 @@ def home():
         "/var/task/analysis",
         "/var/task"
     ]
-
     for folder in candidate_folders:
         candidate = os.path.join(folder, "index.html")
         if os.path.isfile(candidate):
             try:
                 with open(candidate, "r", encoding="utf-8") as f:
-                    return app.response_class(f.read(), status=200, mimetype="text/html")
+                    return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
             except Exception:
                 continue
 
-    return app.response_class(
-        "<!DOCTYPE html><html><head><title>InstallShield AI</title></head>"
-        "<body style='background:#0b0f19;color:#fff;font-family:sans-serif;padding:40px;'>"
-        "<h1>🛡️ InstallShield AI (v1.0)</h1>"
-        "<p>Application is running on Vercel Serverless environment.</p>"
-        "</body></html>",
-        status=200,
-        mimetype="text/html"
-    )
+    try:
+        return render_template("index.html")
+    except Exception:
+        return "<h1>🛡️ InstallShield AI (v1.0)</h1><p>Server active.</p>", 200
 
 
 @app.route("/api/scans", methods=["GET"])
