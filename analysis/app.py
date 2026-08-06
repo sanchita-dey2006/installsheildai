@@ -24,17 +24,28 @@ logger = logging.getLogger("backend")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATE_FOLDER = BASE_DIR
-UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
+
+IS_VERCEL = os.environ.get("VERCEL") == "1" or not os.access(BASE_DIR, os.W_OK)
+if IS_VERCEL:
+    UPLOAD_FOLDER = "/tmp/uploads"
+else:
+    UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
 
 app = Flask(__name__, template_folder=TEMPLATE_FOLDER)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = 32 * 1024 * 1024  # 32 MB Upload Limit
 
 # Create uploads and database folders safely
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+try:
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+except Exception as e:
+    logger.warning("Could not create upload folder %s: %s", UPLOAD_FOLDER, e)
 
-create_database()
+try:
+    create_database()
+except Exception as e:
+    logger.warning("Database initialization deferred/failed: %s", e)
 
 ALLOWED_EXTENSIONS = {"exe", "msi", "dll", "sys", "cab", "zip"}
 VALID_MAGIC_HEADERS = (

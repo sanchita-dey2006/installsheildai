@@ -4,20 +4,40 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-DB_DIR = "database"
-DB_PATH = os.path.join(DB_DIR, "scanner.db")
+def get_effective_db_path(default_path=None):
+    if os.environ.get("VERCEL") == "1":
+        return "/tmp/scanner.db"
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(base_dir)
+    target_dir = os.path.join(project_root, "database")
+    if not os.access(project_root, os.W_OK) or (os.path.exists(target_dir) and not os.access(target_dir, os.W_OK)):
+        return "/tmp/scanner.db"
+    return os.path.join(target_dir, "scanner.db")
+
+DB_PATH = get_effective_db_path()
 
 
-def create_database(db_path=DB_PATH):
+def create_database(db_path=None):
     """Initialize database schema, column migrations, indexes, and SQLite performance PRAGMAs."""
+    if not db_path:
+        db_path = get_effective_db_path()
+
     db_dir = os.path.dirname(db_path)
     if db_dir and not os.path.exists(db_dir):
-        os.makedirs(db_dir, exist_ok=True)
+        try:
+            os.makedirs(db_dir, exist_ok=True)
+        except Exception:
+            db_path = "/tmp/scanner.db"
+            os.makedirs("/tmp", exist_ok=True)
 
     try:
         with sqlite3.connect(db_path) as connection:
             cursor = connection.cursor()
-            cursor.execute("PRAGMA journal_mode=WAL")
+            if not db_path.startswith("/tmp"):
+                try:
+                    cursor.execute("PRAGMA journal_mode=WAL")
+                except Exception:
+                    pass
             cursor.execute("PRAGMA foreign_keys=ON")
             cursor.execute("PRAGMA synchronous=NORMAL")
 
