@@ -31,3 +31,8 @@ except Exception as err:
             "root_dir": ROOT_DIR,
             "sys_path": sys.path
         }), 500
+
+# Explicit top-level WSGI assignments for Vercel AST parser
+app = app
+application = app
+handler = app
