@@ -174,6 +174,8 @@ def internal_server_error(error):
 
 
 @app.route("/")
+@app.route("/api/index")
+@app.route("/api/index.py")
 def home():
     try:
         return render_template("index.html")
