@@ -133,8 +133,12 @@ def calculate_risk_assessment(hashes, string_analysis, entropy, entropy_stats, s
 
 @app.before_request
 def log_request_info():
-    """Request logging middleware."""
-    logger.info("Incoming Request: %s %s from %s", request.method, request.path, request.remote_addr)
+    """Request logging middleware safely wrapped for serverless environments."""
+    try:
+        remote_addr = getattr(request, "remote_addr", "unknown")
+        logger.info("Incoming Request: %s %s from %s", request.method, request.path, remote_addr)
+    except Exception:
+        pass
 
 
 @app.after_request
@@ -174,11 +178,34 @@ def home():
     try:
         return render_template("index.html")
     except Exception:
-        index_path = os.path.join(BASE_DIR, "index.html")
-        if os.path.exists(index_path):
-            with open(index_path, "r", encoding="utf-8") as f:
-                return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
-        return "InstallShield AI Server Running", 200
+        pass
+
+    candidate_folders = [
+        BASE_DIR,
+        os.path.dirname(BASE_DIR),
+        os.getcwd(),
+        "/var/task/analysis",
+        "/var/task"
+    ]
+
+    for folder in candidate_folders:
+        candidate = os.path.join(folder, "index.html")
+        if os.path.isfile(candidate):
+            try:
+                with open(candidate, "r", encoding="utf-8") as f:
+                    return app.response_class(f.read(), status=200, mimetype="text/html")
+            except Exception:
+                continue
+
+    return app.response_class(
+        "<!DOCTYPE html><html><head><title>InstallShield AI</title></head>"
+        "<body style='background:#0b0f19;color:#fff;font-family:sans-serif;padding:40px;'>"
+        "<h1>🛡️ InstallShield AI (v1.0)</h1>"
+        "<p>Application is running on Vercel Serverless environment.</p>"
+        "</body></html>",
+        status=200,
+        mimetype="text/html"
+    )
 
 
 @app.route("/api/scans", methods=["GET"])
