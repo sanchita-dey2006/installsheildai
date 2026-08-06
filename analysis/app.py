@@ -160,19 +160,35 @@ def unsupported_media_type(error):
 
 @app.errorhandler(500)
 def internal_server_error(error):
-    logger.error("Internal Server Error: %s", error)
-    return jsonify({"error": "An internal server error occurred."}), 500
+    import traceback
+    logger.error("Internal Server Error: %s\n%s", error, traceback.format_exc())
+    return jsonify({
+        "status": "error",
+        "message": "An internal server error occurred.",
+        "details": str(error)
+    }), 500
 
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+    try:
+        return render_template("index.html")
+    except Exception:
+        index_path = os.path.join(BASE_DIR, "index.html")
+        if os.path.exists(index_path):
+            with open(index_path, "r", encoding="utf-8") as f:
+                return f.read(), 200, {"Content-Type": "text/html; charset=utf-8"}
+        return "InstallShield AI Server Running", 200
 
 
 @app.route("/api/scans", methods=["GET"])
 def api_scans():
     """REST API endpoint to fetch list of scan history from local SQLite database."""
-    scans = get_all_scans_dict()
+    try:
+        scans = get_all_scans_dict()
+    except Exception as e:
+        logger.warning("Error fetching scans: %s", e)
+        scans = []
     return jsonify({"status": "success", "scans": scans}), 200
 
 
