@@ -835,12 +835,41 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
   // 8. Settings & Toast Alerts
   // =========================================================================
+  function applyTheme(themeName) {
+    document.body.setAttribute('data-theme', themeName);
+    document.documentElement.setAttribute('data-theme', themeName);
+    try {
+      localStorage.setItem('installshield_theme', themeName);
+    } catch (e) {}
+
+    const themeSelect = document.getElementById('setting-theme');
+    if (themeSelect) themeSelect.value = themeName;
+
+    const toggleIcon = document.getElementById('theme-toggle-icon');
+    if (toggleIcon) {
+      toggleIcon.className = themeName === 'light' ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+    }
+  }
+
   function setupSettings() {
+    const savedTheme = localStorage.getItem('installshield_theme') || 'dark';
+    applyTheme(savedTheme);
+
     const themeSelect = document.getElementById('setting-theme');
     if (themeSelect) {
       themeSelect.addEventListener('change', (e) => {
-        document.body.setAttribute('data-theme', e.target.value);
-        showToast(`Theme updated to ${e.target.value}`, 'info');
+        applyTheme(e.target.value);
+        showToast(`Theme switched to ${e.target.value} mode`, 'info');
+      });
+    }
+
+    const themeBtn = document.getElementById('theme-toggle-btn');
+    if (themeBtn) {
+      themeBtn.addEventListener('click', () => {
+        const currentTheme = document.body.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        applyTheme(newTheme);
+        showToast(`Theme switched to ${newTheme} mode`, 'info');
       });
     }
   }
