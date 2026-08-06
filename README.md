@@ -4,6 +4,7 @@
 [![License](https://img.shields.io/badge/license-MIT-emerald.svg)](LICENSE)
 [![Build Status](https://img.shields.io/badge/tests-29%2F29%20passing-brightgreen.svg)]()
 [![AI Engine](https://img.shields.io/badge/AI-100%25%20Offline%20Local-purple.svg)]()
+[![Vercel Deployment](https://img.shields.io/badge/Vercel-Ready-black.svg)]()
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20macOS-lightgrey.svg)]()
 
 **InstallShield AI** is an enterprise-grade, 100% offline static malware analysis and security assessment platform. It is engineered to detect disguised software installers, trojans, ransomware droppers, adware, and bundled Potentially Unwanted Programs (PUPs) before execution.
@@ -24,7 +25,8 @@ The system combines **Cryptographic Fingerprinting**, **Shannon Entropy Obfuscat
   * **Threat Classifier**: Standardized payload classification (`Ransomware`, `Backdoor`, `Dropper`, `Packed Binary`, `PUP`, `Trusted Software`).
   * **Explainable AI (XAI) & Actionable Guidance**: Synthesizes human-readable risk breakdowns and prioritized remediation steps (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`).
 * **📄 ReportLab Vector PDF Export**: Generates printable PDF security assessment reports (`InstallShield_AI_Report_#.pdf`) featuring executive summaries, hash tables, and recommendation cards.
-* **🎨 Modern Wow-Factor Dark Theme Console**: Responsive dark-themed SPA UI featuring Chart.js visual analytics, drag-and-drop file uploader, real-time string search, and SQLite database controls.
+* **🎨 Modern Wow-Factor Dark Theme Console**: Responsive dark-themed SPA UI (`PRO v1.0`) featuring Chart.js visual analytics, drag-and-drop file uploader, real-time string search, and SQLite database controls.
+* **☁️ Vercel Serverless Ready**: Integrated WSGI Serverless Function handler (`api/index.py`), dynamic `/tmp` read-only database fallback, and `vercel.json` rewrites.
 
 ---
 
@@ -32,7 +34,7 @@ The system combines **Cryptographic Fingerprinting**, **Shannon Entropy Obfuscat
 
 ```mermaid
 graph TD
-    User["Web Browser Client"] -->|Upload / View / PDF| AppServer["Flask App Server (analysis/app.py)"]
+    User["Web Browser Client"] -->|Upload / View / PDF| AppServer["Flask App Server (analysis/app.py / api/index.py)"]
     
     subgraph "Static Analysis Engine"
         AppServer -->|1. Hash Fingerprints| Hashes["Cryptographic Hashing (analysis/hashing.py)"]
@@ -52,7 +54,7 @@ graph TD
     end
 
     subgraph "Persistence & UI Console"
-        AppServer -->|6. Persist Metrics| SQLiteDB["SQLite DB (database/scanner.db)"]
+        AppServer -->|6. Persist Metrics| SQLiteDB["SQLite DB (database/scanner.db or /tmp/scanner.db)"]
         AppServer -->|7. Render Real-Time UI| WebUI["Dark Theme SPA (analysis/index.html & static/*)"]
         PDFGen -->|8. Download Vector PDF| PDFFile["InstallShield_AI_Report_#.pdf"]
     end
@@ -64,6 +66,8 @@ graph TD
 
 ```text
 installsheildai-main/
+├── api/                        # Vercel Serverless Function Entrypoint
+│   └── index.py               # WSGI Router & PathFixMiddleware Handler
 ├── ai/                         # Local AI Decision & Intelligence Pipeline
 │   ├── __init__.py
 │   ├── engine.py              # Unified AI Facade
@@ -93,6 +97,7 @@ installsheildai-main/
 ├── signature/                  # Signature Module Compatibility Layer
 │   ├── publisher.py
 │   └── verify_signature.py
+├── vercel.json                 # Vercel Serverless Routing Config
 ├── requirements.txt            # Python Dependencies
 ├── README.md                   # Full Project Documentation
 ├── member-1.md                 # Member 1 Work & Changes Log
@@ -139,6 +144,30 @@ Open your web browser and navigate to: **[http://127.0.0.1:5000](http://127.0.0.
 
 ---
 
+## 🌐 Live Tunneling & Remote Access
+
+To expose your local running application securely for live public demos without deployment:
+
+```bash
+# 1. Start local Flask server
+PYTHONPATH=. python analysis/app.py
+
+# 2. In a separate terminal, launch ngrok tunnel (or SSH tunnel)
+./ngrok http 5000
+```
+
+---
+
+## ☁️ Deploying to Vercel
+
+This repository is pre-configured for instant Vercel Serverless deployment:
+
+1. Import your GitHub repository into **Vercel Dashboard**.
+2. Select **Python** project preset.
+3. Deploy! Vercel automatically routes requests via `vercel.json` and `api/index.py`.
+
+---
+
 ## 📡 REST API Documentation
 
 | Method | Endpoint | Description |
@@ -166,7 +195,7 @@ python -m unittest analysis/test_signature_verification.py analysis/test_static_
 ```text
 .............................
 ----------------------------------------------------------------------
-Ran 29 tests in 0.035s
+Ran 29 tests in 0.028s
 
 OK
 ```
@@ -178,7 +207,7 @@ OK
 We welcome contributions! Please follow these guidelines when submitting pull requests:
 
 1. **Fork & Branching**:
-   * Create feature branches from `main` or `beta-dev`:
+   * Create feature branches from `main`:
      ```bash
      git checkout -b feature/your-feature-name
      ```
@@ -188,7 +217,7 @@ We welcome contributions! Please follow these guidelines when submitting pull re
    * Maintain unit test coverage for new methods.
 3. **Submitting Pull Requests**:
    * Ensure all 29 unit tests pass cleanly (`python -m unittest analysis/test_*.py`).
-   * Submit a Pull Request targeting `beta-dev` or `main` with a clear description of changes.
+   * Submit a Pull Request targeting `main` with a clear description of changes.
 
 ---
 
