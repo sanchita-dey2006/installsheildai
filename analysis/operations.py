@@ -30,25 +30,41 @@ def get_db_connection(db_path=None):
             os.makedirs(db_dir, exist_ok=True)
         except Exception:
             db_path = "/tmp/scanner.db"
-            os.makedirs("/tmp", exist_ok=True)
+            try:
+                os.makedirs("/tmp", exist_ok=True)
+            except Exception:
+                pass
 
-    connection = sqlite3.connect(db_path)
-    connection.row_factory = sqlite3.Row
+    connection = None
     try:
+        connection = sqlite3.connect(db_path)
+        connection.row_factory = sqlite3.Row
         if not db_path.startswith("/tmp"):
             try:
                 connection.execute("PRAGMA journal_mode=WAL")
             except Exception:
                 pass
-        connection.execute("PRAGMA foreign_keys=ON")
+        try:
+            connection.execute("PRAGMA foreign_keys=ON")
+        except Exception:
+            pass
         yield connection
-        connection.commit()
+        if connection:
+            connection.commit()
     except Exception as e:
-        connection.rollback()
+        if connection:
+            try:
+                connection.rollback()
+            except Exception:
+                pass
         logger.error("Database operation failed: %s", e)
-        raise
+        yield None
     finally:
-        connection.close()
+        if connection:
+            try:
+                connection.close()
+            except Exception:
+                pass
 
 
 def save_file(
@@ -69,6 +85,8 @@ def save_file(
     """Save upload scan record to database with optional detailed security metrics."""
     try:
         with get_db_connection(db_path) as connection:
+            if not connection:
+                return None
             cursor = connection.cursor()
             cursor.execute(
                 """
@@ -94,7 +112,7 @@ def save_file(
                 ),
             )
             return cursor.lastrowid
-    except sqlite3.Error as e:
+    except Exception as e:
         logger.error("Error saving file scan record for %s: %s", filename, e)
         return None
 
@@ -103,54 +121,39 @@ def get_all_scans(limit=100, db_path=DB_PATH):
     """Retrieve scan records from database as tuples, ordered by ID DESC."""
     try:
         with get_db_connection(db_path) as connection:
+            if not connection:
+                return []
             cursor = connection.cursor()
-            if limit:
-                cursor.execute(
-                    """
-                    SELECT id, filename, filepath, upload_time
-                    FROM scans
-                    ORDER BY id DESC
-                    LIMIT ?
-                """,
-                    (limit,),
-                )
-            else:
-                cursor.execute(
-                    """
-                    SELECT id, filename, filepath, upload_time
-                    FROM scans
-                    ORDER BY id DESC
-                """
-                )
-            scans = cursor.fetchall()
-            # Return list of tuples for backwards compatibility
-            return [tuple(row) for row in scans]
-    except sqlite3.Error as e:
-        logger.error("Error fetching scan records: %s", e)
+            cursor.execute(
+                "SELECT id, filename, filepath, upload_time FROM scans ORDER BY id DESC LIMIT ?",
+                (limit,),
+            )
+            return [tuple(row) for row in cursor.fetchall()]
+    except Exception as e:
+        logger.error("Error fetching all scans: %s", e)
         return []
 
 
 def get_all_scans_dict(limit=100, db_path=DB_PATH):
-    """Retrieve complete scan records from database as dictionary list."""
+    """Retrieve scan records formatted as dictionaries."""
     try:
         with get_db_connection(db_path) as connection:
+            if not connection:
+                return []
             cursor = connection.cursor()
-            query = """
+            cursor.execute(
+                """
                 SELECT id, filename, filepath, upload_time, md5, sha1, sha256,
                        entropy, entropy_verdict, signature_status, publisher,
                        is_trusted, risk_score, threat_level
-                FROM scans
-                ORDER BY id DESC
-            """
-            if limit:
-                cursor.execute(query + " LIMIT ?", (limit,))
-            else:
-                cursor.execute(query)
-
-            scans = cursor.fetchall()
-            return [dict(row) for row in scans]
-    except sqlite3.Error as e:
-        logger.error("Error fetching scan records dict: %s", e)
+                FROM scans ORDER BY upload_time DESC LIMIT ?
+                """,
+                (limit,),
+            )
+            rows = cursor.fetchall()
+            return [dict(row) for row in rows]
+    except Exception as e:
+        logger.error("Error fetching all scans dict: %s", e)
         return []
 
 
@@ -158,34 +161,37 @@ def get_scan_by_id(scan_id, db_path=DB_PATH):
     """Retrieve a single scan record by ID as a dictionary."""
     try:
         with get_db_connection(db_path) as connection:
+            if not connection:
+                return None
             cursor = connection.cursor()
             cursor.execute(
                 """
                 SELECT id, filename, filepath, upload_time, md5, sha1, sha256,
                        entropy, entropy_verdict, signature_status, publisher,
                        is_trusted, risk_score, threat_level
-                FROM scans
-                WHERE id = ?
+                FROM scans WHERE id = ?
                 """,
                 (scan_id,),
             )
             row = cursor.fetchone()
             return dict(row) if row else None
-    except sqlite3.Error as e:
-        logger.error("Error fetching scan record #%s: %s", scan_id, e)
+    except Exception as e:
+        logger.error("Error fetching scan by id %s: %s", scan_id, e)
         return None
 
 
 def delete_all_scans(db_path=DB_PATH):
-    """Delete all scan records from the SQLite database."""
+    """Delete all scan history records from database."""
     try:
         with get_db_connection(db_path) as connection:
+            if not connection:
+                return False
             cursor = connection.cursor()
             cursor.execute("DELETE FROM scans;")
             connection.commit()
             logger.info("All scan history records deleted successfully.")
             return True
-    except sqlite3.Error as e:
+    except Exception as e:
         logger.error("Error deleting all scan records: %s", e)
         return False
 
@@ -194,11 +200,13 @@ def delete_scan_by_id(scan_id, db_path=DB_PATH):
     """Delete a single scan record by ID."""
     try:
         with get_db_connection(db_path) as connection:
+            if not connection:
+                return False
             cursor = connection.cursor()
             cursor.execute("DELETE FROM scans WHERE id = ?;", (scan_id,))
             connection.commit()
             logger.info("Scan record #%s deleted successfully.", scan_id)
             return cursor.rowcount > 0
-    except sqlite3.Error as e:
+    except Exception as e:
         logger.error("Error deleting scan record #%s: %s", scan_id, e)
         return False
