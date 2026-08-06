@@ -1,13 +1,10 @@
-# Exclude Member 2-5 code modules and assets
-ai/
-analysis/static/
-analysis/reports/
+# Exclude temporary uploads and database runtime files
 analysis/uploads/*
 !analysis/uploads/.gitkeep
-analysis/test_ai_engine.py
+analysis/reports/*
 database/scanner.db
 
-# Exclude virtual environments and python caches
+# Exclude virtual environments, binaries, and python caches
 .venv/
 __pycache__/
 *.pyc
@@ -17,4 +14,3 @@ __pycache__/
 .DS_Store
 scratch/
 ngrok
-
