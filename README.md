@@ -1,4 +1,4 @@
-# 🛡️ InstallShield AI (v2.4) — Automated Fake Software Installer Detector
+# 🛡️ InstallShield AI (v1.0) — Automated Fake Software Installer Detector
 
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-emerald.svg)](LICENSE)
