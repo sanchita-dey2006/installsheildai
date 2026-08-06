@@ -1,0 +1,18 @@
+# Exclude Member 2-5 code modules and assets
+ai/
+analysis/static/
+analysis/reports/
+analysis/uploads/*
+!analysis/uploads/.gitkeep
+analysis/test_ai_engine.py
+database/scanner.db
+
+# Exclude virtual environments and python caches
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.DS_Store
+scratch/

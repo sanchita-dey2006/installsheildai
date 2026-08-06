@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InstallShield AI - Malware Installer & Executable Verifier</title>
+  
+  <!-- SEO & Meta Tags -->
+  <meta name="description" content="InstallShield AI helps users verify whether a software installer or executable binary is safe before executing it, using static analysis, signature verification, and entropy heuristics.">
+  <meta name="theme-color" content="#090D16">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome / Feather Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Chart.js CDN for visual analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Application Stylesheet -->
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- ===================================================================
+         SIDEBAR NAVIGATION
+         =================================================================== -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-icon">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <div>
+          <div class="brand-text">InstallShield <span style="color:var(--primary);">AI</span></div>
+        </div>
+        <span class="brand-badge">PRO v2.4</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Core Navigation</div>
+        <a href="#landing" class="nav-item active" data-view="landing">
+          <i class="fa-solid fa-house"></i>
+          <span>Home / Landing</span>
+        </a>
+        <a href="#dashboard" class="nav-item" data-view="dashboard">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="#upload" class="nav-item" data-view="upload">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <span>Scan Installer</span>
+        </a>
+
+        <div class="nav-section-title" style="margin-top: 14px;">Analysis & Data</div>
+        <a href="#result" class="nav-item" data-view="result">
+          <i class="fa-solid fa-file-contract"></i>
+          <span>Scan Result</span>
+        </a>
+        <a href="#history" class="nav-item" data-view="history">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+          <span>Scan History</span>
+        </a>
+
+        <div class="nav-section-title" style="margin-top: 14px;">Configuration</div>
+        <a href="#settings" class="nav-item" data-view="settings">
+          <i class="fa-solid fa-sliders"></i>
+          <span>Settings</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="system-status">
+          <div class="status-dot"></div>
+          <div>
+            <div style="font-weight: 600; font-size: 0.82rem;">Engine Status</div>
+            <div style="font-size: 0.74rem; opacity: 0.8;">Active & Operational</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===================================================================
+         MAIN WORKSPACE AREA
+         =================================================================== -->
+    <div class="main-wrapper">
+      <!-- Top Header Bar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="menu-toggle" id="menu-toggle" aria-label="Toggle Sidebar">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <h1 class="page-title" id="page-title">Welcome to InstallShield AI</h1>
+        </div>
+
+        <div class="topbar-right">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" placeholder="Search hashes, files...">
+          </div>
+          <a href="#upload" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-upload"></i> New Scan
+          </a>
+        </div>
+      </header>
+
+      <!-- Dynamic Views Container -->
+      <main class="content-area">
+
+        <!-- ===============================================================
+             VIEW 1: LANDING PAGE
+             =============================================================== -->
+        <section id="view-landing" class="view-section active">
+          <div class="hero-section">
+            <div class="hero-tag">
+              <i class="fa-solid fa-shield-virus"></i> Advanced Installer Protection
+            </div>
+            <h1 class="hero-title">
+              Detect Fake & Malicious Software <span>Installers Before Execution</span>
+            </h1>
+            <p class="hero-subtitle">
+              Cybercriminals disguise trojans as Google Chrome, Zoom, WhatsApp, VLC, or Adobe Reader installers. InstallShield AI analyzes digital signatures, entropy levels, cryptographic hashes, and binary strings in real-time to protect your desktop.
+            </p>
+            <div class="hero-actions">
+              <a href="#upload" class="btn btn-primary btn-lg">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Scan Installer Now
+              </a>
+              <a href="#dashboard" class="btn btn-secondary btn-lg">
+                <i class="fa-solid fa-chart-line"></i> View Dashboard
+              </a>
+            </div>
+          </div>
+
+          <!-- Feature Cards Grid -->
+          <div class="features-grid grid-4">
+            <div class="feature-card">
+              <div class="feature-icon"><i class="fa-solid fa-signature"></i></div>
+              <h3 class="feature-title">Authenticode Verification</h3>
+              <p class="feature-desc">Validates digital signature certificate subjects against trusted software publisher databases.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon"><i class="fa-solid fa-key"></i></div>
+              <h3 class="feature-title">Cryptographic Hashing</h3>
+              <p class="feature-desc">Generates instant MD5, SHA-1, and SHA-256 fingerprints to check against known malware databases.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon"><i class="fa-solid fa-gauge-high"></i></div>
+              <h3 class="feature-title">Entropy & Packing Analysis</h3>
+              <p class="feature-desc">Measures file entropy level to identify hidden compression, packing, or obfuscated payloads.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon"><i class="fa-solid fa-code"></i></div>
+              <h3 class="feature-title">String Extraction Engine</h3>
+              <p class="feature-desc">Extracts ASCII and UTF-16 strings to detect suspicious API calls, registry operations, and remote C2 URLs.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             VIEW 2: DASHBOARD
+             =============================================================== -->
+        <section id="view-dashboard" class="view-section">
+          <!-- Overview Cards -->
+          <div class="grid-4" style="margin-bottom: 24px;">
+            <div class="card stat-card emerald">
+              <div class="card-header">
+                <span class="stat-label">Total Files Scanned</span>
+                <div class="stat-icon"><i class="fa-solid fa-microchip"></i></div>
+              </div>
+              <div class="stat-value" id="stat-total-scanned">0</div>
+              <span class="pill pill-info"><i class="fa-solid fa-arrow-up"></i> Live Sync</span>
+            </div>
+
+            <div class="card stat-card green">
+              <div class="card-header">
+                <span class="stat-label">Safe & Verified Files</span>
+                <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+              </div>
+              <div class="stat-value" id="stat-safe-files">0</div>
+              <span class="pill pill-success">Clean Installers</span>
+            </div>
+
+            <div class="card stat-card amber">
+              <div class="card-header">
+                <span class="stat-label">Suspicious Files</span>
+                <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+              </div>
+              <div class="stat-value" id="stat-suspicious-files">0</div>
+              <span class="pill pill-warning">Review Needed</span>
+            </div>
+
+            <div class="card stat-card red">
+              <div class="card-header">
+                <span class="stat-label">Malicious Trojans</span>
+                <div class="stat-icon"><i class="fa-solid fa-bug"></i></div>
+              </div>
+              <div class="stat-value" id="stat-malicious-files">0</div>
+              <span class="pill pill-danger">Blocked / High Risk</span>
+            </div>
+          </div>
+
+          <!-- Charts Row -->
+          <div class="grid-2-1" style="margin-bottom: 24px;">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fa-solid fa-chart-column" style="color:var(--primary);"></i> Scan Activity Statistics</h3>
+              </div>
+              <canvas id="scanStatsChart" height="110"></canvas>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fa-solid fa-pie-chart" style="color:var(--warning);"></i> Risk Distribution</h3>
+              </div>
+              <canvas id="riskDistributionChart" height="180"></canvas>
+            </div>
+          </div>
+
+          <!-- Recent Activity Stream -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fa-solid fa-clock-rotate-left" style="color:var(--primary);"></i> Recent Installer Scans</h3>
+              <a href="#history" class="btn btn-secondary btn-sm">View Full History</a>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Filename</th>
+                    <th>Verdict</th>
+                    <th>Scan Timestamp</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboard-recent-table">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             VIEW 3: UPLOAD PAGE
+             =============================================================== -->
+        <section id="view-upload" class="view-section">
+          <div class="card" style="max-width: 900px; margin: 0 auto;">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fa-solid fa-cloud-arrow-up" style="color:var(--primary);"></i> Upload Executable for Analysis</h3>
+            </div>
+
+            <div class="dropzone" id="dropzone">
+              <div class="dropzone-icon">
+                <i class="fa-solid fa-file-shield"></i>
+              </div>
+              <h3 class="dropzone-title">Drag & Drop Installer File Here</h3>
+              <p class="dropzone-hint">Supports Windows installers (.exe, .msi, .dll, .sys, .cab)</p>
+              
+              <label for="file-input" class="btn btn-primary">
+                <i class="fa-solid fa-folder-open"></i> Browse Local File
+              </label>
+              <input type="file" id="file-input" accept=".exe,.msi,.dll,.sys,.cab" style="display: none;">
+
+              <div class="supported-formats">
+                <span class="format-badge">.EXE</span>
+                <span class="format-badge">.MSI</span>
+                <span class="format-badge">.DLL</span>
+                <span class="format-badge">.SYS</span>
+              </div>
+            </div>
+
+            <!-- Upload Progress Bar -->
+            <div class="upload-progress-card" id="upload-progress-card">
+              <div class="progress-header">
+                <div class="file-info-preview">
+                  <div class="file-icon-box"><i class="fa-solid fa-file-code"></i></div>
+                  <div>
+                    <div style="font-weight: 600;" id="progress-file-name">installer_setup.exe</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">Calculating SHA256 & analyzing binary...</div>
+                  </div>
+                </div>
+                <span style="font-weight: 700; color: var(--primary);" id="progress-percentage">0%</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progress-bar-fill"></div>
+              </div>
+              <div style="margin-top: 14px; text-align: right;">
+                <button class="btn btn-secondary btn-sm" id="cancel-upload-btn">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             VIEW 4: SCAN RESULT PAGE
+             =============================================================== -->
+        <section id="view-result" class="view-section">
+          <!-- Empty State (Shown when no scan has been performed) -->
+          <div id="res-empty-state" class="card" style="text-align: center; padding: 60px 20px;">
+            <i class="fa-solid fa-shield-halved" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 16px;"></i>
+            <h3 style="font-size: 1.2rem; font-weight: 600; color: var(--text-main); margin-bottom: 8px;">No Active Scan Results</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Upload an installer executable or select a historical scan to inspect detailed analysis results.</p>
+            <button class="btn btn-primary btn-sm" onclick="window.location.hash='#upload'">
+              <i class="fa-solid fa-upload"></i> Scan Installer Now
+            </button>
+          </div>
+
+          <!-- Scan Result Content Container (Populated dynamically from real scan data) -->
+          <div id="res-content-container" style="display: none;">
+            <div class="card" style="margin-bottom: 24px;">
+              <div class="card-header">
+                <div>
+                  <h2 style="font-size: 1.4rem; font-weight: 700;" id="res-filename">-</h2>
+                  <div style="font-size: 0.85rem; color: var(--text-muted);" id="res-path">-</div>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                  <span id="res-threat-badge" class="pill pill-success">-</span>
+                  <button class="btn btn-primary btn-sm" id="res-download-pdf-btn">
+                    <i class="fa-solid fa-file-pdf"></i> Download PDF Report
+                  </button>
+                </div>
+              </div>
+
+              <div class="grid-3" style="margin-top: 10px;">
+                <!-- Overall Risk Score Circle -->
+                <div class="card" style="text-align: center;">
+                  <h4 class="card-subtitle" style="margin-bottom: 12px;">OVERALL RISK SCORE</h4>
+                  <div class="risk-circle safe" id="res-risk-circle">
+                    <span class="risk-score-num" id="res-risk-score">0</span>
+                    <span class="risk-score-label">/ 100</span>
+                  </div>
+                </div>
+
+                <!-- Authenticode Signature -->
+                <div class="card">
+                  <h4 class="card-subtitle" style="margin-bottom: 12px;">DIGITAL SIGNATURE</h4>
+                  <div style="margin-bottom: 8px;">
+                    <div style="font-size: 0.78rem; color: var(--text-muted);">Publisher / Signer:</div>
+                    <strong style="font-size: 1rem;" id="res-publisher">-</strong>
+                  </div>
+                  <div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted);">Authenticode Status:</div>
+                    <span id="res-signature-status" style="font-weight: 600;">-</span>
+                  </div>
+                </div>
+
+                <!-- Entropy Metric -->
+                <div class="card">
+                  <h4 class="card-subtitle" style="margin-bottom: 12px;">ENTROPY ANALYSIS</h4>
+                  <div style="font-size: 1.8rem; font-weight: 700; color: var(--primary);" id="res-entropy-value">0.0 / 8.0</div>
+                  <div style="font-size: 0.85rem; color: var(--text-muted);" id="res-entropy-verdict">-</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Hashes & Recommendations Grid -->
+            <div class="grid-2" style="margin-bottom: 24px;">
+              <!-- Cryptographic Hashes Card -->
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title"><i class="fa-solid fa-hashtag" style="color:var(--primary);"></i> Cryptographic Fingerprints</h3>
+                </div>
+
+                <div class="hash-box">
+                  <span class="hash-label">MD5</span>
+                  <span class="hash-value" id="res-md5">-</span>
+                  <button class="btn-icon copy-hash-btn" data-target="res-md5" title="Copy MD5"><i class="fa-solid fa-copy"></i></button>
+                </div>
+
+                <div class="hash-box">
+                  <span class="hash-label">SHA-1</span>
+                  <span class="hash-value" id="res-sha1">-</span>
+                  <button class="btn-icon copy-hash-btn" data-target="res-sha1" title="Copy SHA1"><i class="fa-solid fa-copy"></i></button>
+                </div>
+
+                <div class="hash-box">
+                  <span class="hash-label">SHA-256</span>
+                  <span class="hash-value" id="res-sha256">-</span>
+                  <button class="btn-icon copy-hash-btn" data-target="res-sha256" title="Copy SHA256"><i class="fa-solid fa-copy"></i></button>
+                </div>
+              </div>
+
+              <!-- Safety Recommendations Card -->
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title"><i class="fa-solid fa-shield-heart" style="color:var(--success);"></i> Safety Recommendations</h3>
+                </div>
+                <ul id="res-recommendations-list" style="list-style: none; padding: 0; font-size: 0.9rem; line-height: 1.8;">
+                </ul>
+              </div>
+            </div>
+
+            <!-- Extracted Strings Card -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fa-solid fa-code" style="color:var(--primary);"></i> Extracted Printable Strings</h3>
+                <span class="pill pill-info" id="strings-count-badge">0 extracted</span>
+              </div>
+
+              <div style="margin-bottom: 12px;">
+                <input type="text" id="string-search-input" class="search-box input" placeholder="Search extracted strings (e.g. cmd.exe, http, registry)..." style="width: 100%; padding: 8px 12px; background: var(--bg-main); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); color: var(--text-main);">
+              </div>
+
+              <div class="strings-container" id="strings-list-container">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             VIEW 5: HISTORY PAGE
+             =============================================================== -->
+        <section id="view-history" class="view-section">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fa-solid fa-database" style="color:var(--primary);"></i> Installer Scan Archive</h3>
+              <div style="display: flex; gap: 12px; align-items: center;">
+                <div class="search-box" style="width: 250px;">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input type="text" id="history-search-input" placeholder="Search by filename or ID...">
+                </div>
+                <button class="btn btn-secondary btn-sm" id="clear-all-history-btn" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">
+                  <i class="fa-solid fa-trash"></i> Clear History
+                </button>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Scan ID</th>
+                    <th>Filename</th>
+                    <th>Verdict</th>
+                    <th>Scan Timestamp</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="history-table-body">
+                  <!-- Dynamically synced from /history API -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             VIEW 6: SETTINGS PAGE
+             =============================================================== -->
+        <section id="view-settings" class="view-section">
+          <div class="card" style="max-width: 800px;">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fa-solid fa-sliders" style="color:var(--primary);"></i> Engine & Preferences Settings</h3>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+              <div>
+                <label style="font-weight: 600; display: block; margin-bottom: 6px;">Appearance Theme</label>
+                <select id="setting-theme" style="width: 100%; padding: 10px; background: var(--bg-main); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); color: var(--text-main);">
+                  <option value="dark">Dark Theme (Enterprise Emerald Security Console)</option>
+                  <option value="light">Light Theme</option>
+                </select>
+              </div>
+
+              <div>
+                <label style="font-weight: 600; display: block; margin-bottom: 6px;">Report Export Format</label>
+                <select style="width: 100%; padding: 10px; background: var(--bg-main); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); color: var(--text-main);">
+                  <option value="pdf">PDF Document (*.pdf)</option>
+                  <option value="json">JSON Security Schema (*.json)</option>
+                </select>
+              </div>
+
+              <div style="border-top: 1px solid var(--border-subtle); padding-top: 16px;">
+                <h4 style="margin-bottom: 8px;">About InstallShield AI</h4>
+                <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6;">
+                  InstallShield AI is designed to protect endpoints against disguised software installers, trojans, and phishing binaries by inspecting digital signatures, calculating cryptographic hashes, measuring file entropy, and parsing executable strings.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Toast Notification Overlay -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- PDF Export Modal Overlay -->
+  <div id="pdf-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(8px);">
+    <div class="card" style="width: 600px; max-width: 90vw; background: var(--bg-surface);">
+      <div class="card-header">
+        <h3 class="card-title"><i class="fa-solid fa-file-pdf" style="color:var(--danger);"></i> Scan Analysis PDF Report</h3>
+        <button class="btn-icon" id="close-pdf-modal-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 20px;">
+        A comprehensive PDF report containing cryptographic hash verification, digital signature status, and extracted binary string analysis has been generated for printing or archiving.
+      </p>
+      <div style="display: flex; justify-content: flex-end; gap: 12px;">
+        <button class="btn btn-primary" id="download-pdf-direct-btn"><i class="fa-solid fa-file-pdf"></i> Download Vector PDF Report</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Engine Script -->
+  <script src="/static/app.js"></script>
+</body>
+</html>
