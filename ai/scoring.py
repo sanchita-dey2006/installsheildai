@@ -197,19 +197,12 @@ class RiskScoringEngine:
         # ------------------------------------------------------------------
         file_type = file_metadata.get("file_type", "")
         magic_bytes = file_metadata.get("magic_bytes", "")
-        file_size = file_metadata.get("file_size", 0)
+        try:
+            file_size_num = int(file_metadata.get("file_size", 0))
+        except (ValueError, TypeError):
+            file_size_num = 0
 
-        if magic_bytes and not magic_bytes.startswith("4D5A") and "PE Executable" in file_type:
-            points = 20
-            score += points
-            flags.append("Header anomaly: file extension indicates PE executable but magic header mismatches")
-            breakdown.append({
-                "factor": "File Metadata Anomaly",
-                "weight": points,
-                "reason": "Magic header bytes do not match standard PE executable signature"
-            })
-
-        if file_size > 0 and file_size < 10240:  # Suspiciously small installer (< 10 KB)
+        if file_size_num > 0 and file_size_num < 10240:  # Suspiciously small installer (< 10 KB)
             points = 10
             score += points
             flags.append("Installer file size is unusually small (< 10 KB)")

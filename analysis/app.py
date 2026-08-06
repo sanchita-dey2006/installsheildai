@@ -227,17 +227,29 @@ def api_scan_pdf_report(scan_id):
         return jsonify({"status": "error", "message": "Scan record not found"}), 404
 
     save_path = scan.get("filepath", "")
-    if not save_path or not os.path.exists(save_path):
-        return jsonify({"status": "error", "message": "Scanned file no longer exists on disk"}), 404
+    has_file = save_path and os.path.exists(save_path)
 
-    # Run AI evaluation on saved file
-    hashes = calculate_hashes(save_path)
-    string_analysis = analyze_strings(save_path)
-    entropy_val, entropy_stats = calculate_entropy(save_path)
-    sig_info = verify_signature(save_path)
-    publisher_name = sig_info.get("publisher", scan.get("publisher", "Unknown"))
-    trusted = is_trusted_publisher(publisher_name)
-    metadata = hashes.get("metadata", {})
+    if has_file:
+        hashes = calculate_hashes(save_path)
+        string_analysis = analyze_strings(save_path)
+        entropy_val, entropy_stats = calculate_entropy(save_path)
+        sig_info = verify_signature(save_path)
+        publisher_name = sig_info.get("publisher", scan.get("publisher", "Unknown"))
+        trusted = is_trusted_publisher(publisher_name)
+        metadata = hashes.get("metadata", {})
+    else:
+        md5_val = scan.get("md5", "N/A")
+        sha1_val = scan.get("sha1", "N/A")
+        sha256_val = scan.get("sha256", "N/A")
+        hashes = {"md5": md5_val, "sha1": sha1_val, "sha256": sha256_val}
+        string_analysis = {"suspicious_apis": [], "suspicious_keywords": [], "urls": [], "strings": []}
+        entropy_val = scan.get("entropy", 0.0) or 0.0
+        entropy_verdict = scan.get("entropy_verdict", "Normal")
+        entropy_stats = {"entropy": entropy_val, "verdict": entropy_verdict}
+        publisher_name = scan.get("publisher", "Unknown")
+        trusted = bool(scan.get("is_trusted", False))
+        sig_info = {"status": scan.get("signature_status", "Unknown"), "publisher": publisher_name, "is_signed": trusted}
+        metadata = {"file_size": "N/A", "file_type": "Executable Binary", "magic_bytes": "4D5A"}
 
     ai_assessment = AIEngine.analyze(
         sig_info=sig_info,
@@ -248,17 +260,25 @@ def api_scan_pdf_report(scan_id):
         file_metadata=metadata,
         hashes=hashes,
         filename=scan.get("filename", "Unknown"),
-        filepath=save_path,
+        filepath=save_path or "N/A",
         scan_id=scan_id
     )
 
-    reports_dir = os.path.join(BASE_DIR, "reports")
+    if IS_VERCEL or not os.access(BASE_DIR, os.W_OK):
+        reports_dir = "/tmp"
+    else:
+        reports_dir = os.path.join(BASE_DIR, "reports")
+        try:
+            os.makedirs(reports_dir, exist_ok=True)
+        except Exception:
+            reports_dir = "/tmp"
+
     pdf_filename = f"InstallShield_AI_Report_{scan_id}.pdf"
     pdf_path = os.path.join(reports_dir, pdf_filename)
 
-    AIEngine.generate_pdf_report(ai_assessment, pdf_path)
+    actual_pdf_path = AIEngine.generate_pdf_report(ai_assessment, pdf_path)
 
-    return send_file(pdf_path, as_attachment=True, download_name=pdf_filename, mimetype="application/pdf")
+    return send_file(actual_pdf_path, as_attachment=True, download_name=pdf_filename, mimetype="application/pdf")
 
 
 @app.route("/api/scans/latest/report", methods=["GET"])

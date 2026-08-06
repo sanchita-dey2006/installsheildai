@@ -141,7 +141,8 @@ class PDFReportGenerator:
             leading=17,
             textColor=blue_primary,
             spaceBefore=12,
-            spaceAfter=6
+            spaceAfter=6,
+            wordWrap="CJK"
         )
         body_style = ParagraphStyle(
             "BodyTextCustom",
@@ -149,7 +150,8 @@ class PDFReportGenerator:
             fontName="Helvetica",
             fontSize=9,
             leading=13,
-            textColor=text_dark
+            textColor=text_dark,
+            wordWrap="CJK"
         )
         table_header_style = ParagraphStyle(
             "TableHeader",
@@ -157,7 +159,8 @@ class PDFReportGenerator:
             fontName="Helvetica-Bold",
             fontSize=9,
             leading=11,
-            textColor=colors.white
+            textColor=colors.white,
+            wordWrap="CJK"
         )
         table_cell_style = ParagraphStyle(
             "TableCell",
@@ -165,7 +168,8 @@ class PDFReportGenerator:
             fontName="Helvetica",
             fontSize=8,
             leading=11,
-            textColor=text_dark
+            textColor=text_dark,
+            wordWrap="CJK"
         )
         table_cell_bold = ParagraphStyle(
             "TableCellBold",
@@ -173,7 +177,8 @@ class PDFReportGenerator:
             fontName="Helvetica-Bold",
             fontSize=8,
             leading=11,
-            textColor=text_dark
+            textColor=text_dark,
+            wordWrap="CJK"
         )
 
         elements = []
@@ -389,7 +394,20 @@ class PDFReportGenerator:
             elements.append(rec_table)
 
         # Build document
-        doc.build(elements, canvasmaker=NumberedCanvas)
-        logger.info("Generated PDF report successfully at %s", abs_output_path)
+        try:
+            doc.build(elements, canvasmaker=NumberedCanvas)
+        except (PermissionError, OSError) as e:
+            logger.warning("Permission error building PDF at %s: %s. Fallback to /tmp", abs_output_path, e)
+            abs_output_path = os.path.join("/tmp", os.path.basename(output_path))
+            doc = SimpleDocTemplate(
+                abs_output_path,
+                pagesize=letter,
+                leftMargin=36,
+                rightMargin=36,
+                topMargin=40,
+                bottomMargin=50
+            )
+            doc.build(elements, canvasmaker=NumberedCanvas)
 
+        logger.info("Generated PDF report successfully at %s", abs_output_path)
         return abs_output_path
