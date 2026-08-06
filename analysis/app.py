@@ -31,7 +31,8 @@ if IS_VERCEL:
 else:
     UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
 
-app = Flask(__name__, template_folder=TEMPLATE_FOLDER)
+STATIC_FOLDER = os.path.join(BASE_DIR, "static")
+app = Flask(__name__, template_folder=TEMPLATE_FOLDER, static_folder=STATIC_FOLDER, static_url_path="/static")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = 32 * 1024 * 1024  # 32 MB Upload Limit
 
